@@ -1,0 +1,7 @@
+*.o
+sample001.c
+ptucc_scan
+*.tab.*
+ptucc_scan
+ptucc_lex.c
+ptucc
