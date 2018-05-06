@@ -3,6 +3,8 @@
 *)
 
 program foo;
+type 	tzanis = integer;
+		kri8arakos = real;
 var x, y: integer;
 	z: real;
 	a, b: boolean;
@@ -11,6 +13,20 @@ var x, y: integer;
 	array2: array of char;
 	functionPtr1, functionPtr2: function(a1, a2: integer, b:real, c:char, d:boolean):integer;
 	functionPtr3: function(a1, a2: integer, b:real, c:char, d:boolean): function(a1, a2: integer, b:real, c:char, d:boolean):integer;
+
+procedure add1(n: integer; k:integer; a, b: real);
+type 	tzanis = integer;
+			kri8arakos = real;
+	var j: integer;
+	function cube(i: integer): integer;
+	type 	tzanis = integer;
+			kri8arakos = real;
+	begin
+		writeString('')
+	end;
+begin
+	writeString('')
+end;
 
 begin
 	writeString('Hello world');

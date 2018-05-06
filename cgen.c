@@ -6,25 +6,21 @@
 
 extern int line_num;
 
-void ssopen(sstream* S)
-{
+void ssopen(sstream* S){
 	S->stream = open_memstream(& S->buffer, & S->bufsize);
 }
 
-char* ssvalue(sstream* S)
-{
+char* ssvalue(sstream* S){
 	fflush(S->stream);
 	return S->buffer;
 }
 
-void ssclose(sstream* S)
-{
+void ssclose(sstream* S){
 	fclose(S->stream);
 }
 
 
-char* template(const char* pat, ...)
-{
+char* template(const char* pat, ...){
 	sstream S;
 	ssopen(&S);
 
@@ -40,8 +36,7 @@ char* template(const char* pat, ...)
 
 /* Helper functions */
 
-char* string_ptuc2c(char* P)
-{
+char* string_ptuc2c(char* P){
 	/*
 		This implementation is 
 		***** NOT CORRECT ACCORDING TO THE PROJECT ******
@@ -57,15 +52,12 @@ char* string_ptuc2c(char* P)
 }
 
 
-
-
 /*
 	Report errors 
 */
  void yyerror (char const *pat, ...) {
  	va_list arg;
     fprintf (stderr, "line %d: ", line_num);
-
     va_start(arg, pat);
     vfprintf(stderr, pat, arg);
     va_end(arg);
@@ -92,6 +84,34 @@ char* getArrayDeclarationString(char* identifiers, char* dimensions){
 	return result;
 }
 
+char* getArrayPointerDeclarationString(char* identifiers, char* type){
+	char *result;
+	char *token = strtok(identifiers, ",");
+	if(token!= NULL){
+		result = template("%s* %s", type, token);
+		token = strtok(NULL, ",");
+	}
+    while (token != NULL){
+		result = template("%s, %s* %s", result, type, token);
+        token = strtok(NULL, ",");
+    }
+	return result;
+}
+
+char* getArrayDeclarationStringWithType(char* identifiers, char* dimensions, char* type){
+	char *result;
+	char *token = strtok(identifiers, ",");
+	if(token!= NULL){
+		result = template("%s %s%s", type, token, dimensions);
+		token = strtok(NULL, ",");
+	}
+    while (token != NULL){
+		result = template("%s, %s %s%s", result, type, token, dimensions);
+        token = strtok(NULL, ",");
+    }
+	return result;
+}
+
 char* getParameterDeclarationString(char* identifiers, char* type){
 	char *result;
 	char *token = strtok(identifiers, ",");
@@ -110,12 +130,27 @@ char* getFunctionPointerDeclaration(char* identifiers, char* type, char* paramet
 	char *result;
 	char *token = strtok(identifiers, ",");
 	if(token!= NULL){
-		result = template("%s (*%s)(%s);\n", type, token, parameters);
+		result = template("%s (*%s)(%s)", type, token, parameters);
 		token = strtok(NULL, ",");
 	}
     while (token != NULL){
-		result = template("%s%s (*%s)(%s);\n", result, type, token, parameters);
+		result = template("%s, (*%s)(%s)", result, token, parameters);
         token = strtok(NULL, ",");
     }
+	result = template("%s;", result);
 	return result;	
+}
+
+char* getFunctionPointerDeclarationAsParameters(char* identifiers, char* type, char* parameters){
+	char *result;
+	char *token = strtok(identifiers, ",");
+	if(token!= NULL){
+		result = template("%s (*%s)(%s)", type, token, parameters);
+		token = strtok(NULL, ",");
+	}
+    while (token != NULL){
+		result = template("%s, %s (*%s)(%s)", result, type, token, parameters);
+        token = strtok(NULL, ",");
+    }
+	return result;
 }

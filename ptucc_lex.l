@@ -88,6 +88,7 @@ until					return KW_UNTIL;
 downto					return KW_DOWNTO;
 true					return KW_TRUE;
 false					return KW_FALSE;
+type					return KW_TYPE;
 
 
 {STRING}				{ yylval.crepr = strdup(yytext); return STRING; }

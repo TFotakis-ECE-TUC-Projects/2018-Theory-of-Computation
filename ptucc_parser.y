@@ -7,8 +7,7 @@ extern int yylex(void);
 extern int line_num;
 %}
 
-%union
-{
+%union{
 	char* crepr;
 }
 
@@ -51,6 +50,7 @@ extern int line_num;
 %token KW_DOWNTO
 %token KW_TRUE
 %token KW_FALSE
+%token KW_TYPE
 %token CONST_STRING
 %token CASTING
 %token OP_DIFFERENT
@@ -62,43 +62,60 @@ extern int line_num;
 
 %start program
 
-%type <crepr> program_decl body statements statement_list
-%type <crepr> statement proc_call arguments
-%type <crepr> arglist expression dataType variableDeclaration identifierList
-%type <crepr> arrayDimensionDeclarator arrayIndexer parametersDeclaration
-%type <crepr> basicDataType functionPointerDeclaration functionPointerType
+%type <crepr> program_decl 
+%type <crepr> body
+%type <crepr> statements
+%type <crepr> statement_list
+%type <crepr> statement
+%type <crepr> proc_call
+%type <crepr> arguments
+%type <crepr> arglist
+%type <crepr> expression
+%type <crepr> dataType
+%type <crepr> variableDeclaration
+%type <crepr> variableDeclarationStatement
+%type <crepr> variableDeclarationList
+%type <crepr> identifierList
+%type <crepr> arrayDimensionDeclarator
+%type <crepr> arrayIndexer
+%type <crepr> parametersDeclaration
+%type <crepr> basicDataType
+%type <crepr> functionPointerDeclaration
+%type <crepr> functionPointerType
 %type <crepr> empty
+%type <crepr> subprogram
+%type <crepr> subprogramList
+%type <crepr> subprogramTitle
+%type <crepr> subprogramBody
+%type <crepr> subprogramParametersDeclaration
+%type <crepr> subprogramParametersDeclarationList
+%type <crepr> variableDeclarationOptional
+%type <crepr> typedefsOptional
+%type <crepr> typedefs
+%type <crepr> typedefList
+%type <crepr> typedefStatement
 
 %left '-' '+'
 %left '*' '/'
 
 %%
+
 empty: { $$ = ""; };
 
-program:  
-	program_decl body  '.'
-		{ 
-			/* We have a successful parse! 
-				Check for any errors and generate output. 
-			*/
-			if(yyerror_count==0) {
-				puts(c_prologue);
-				printf("/* program  %s */ \n\n", $1);
-				printf("int main() %s \n", $2);
-			}
+program:  program_decl typedefsOptional variableDeclarationOptional subprogramList body  '.'
+	{ 
+		/* We have a successful parse! 
+			Check for any errors and generate output. 
+		*/
+		if(yyerror_count==0) {
+			puts(c_prologue);
+			printf("/* program  %s */ \n\n", $1);
+			printf("%s\n\n", $2);
+			printf("%s\n\n", $3);
+			printf("%s\n\n", $4);
+			printf("int main() %s \n", $5);
 		}
-	| program_decl variableDeclaration body  '.'   		
-		{ 
-			/* We have a successful parse! 
-				Check for any errors and generate output. 
-			*/
-			if(yyerror_count==0) {
-				puts(c_prologue);
-				printf("/* program  %s */ \n\n", $1);
-				printf("%s\n\n", $2);
-				printf("int main() %s \n", $3);
-			}
-		}
+	}
 	;
 
 program_decl: KW_PROGRAM IDENT ';'  	{ $$ = $2; };
@@ -137,17 +154,22 @@ expression:
 	| expression '/' expression 	{ $$ = template("%s / %s", $1, $3); }
 	;
 
-variableDeclaration:
-	KW_VAR 
-		{ $$ = ""; }
-	| variableDeclaration identifierList ':' basicDataType ';'
-		{ $$ = template("%s%s %s;\n", $1, $4, $2); }
-	| variableDeclaration identifierList ':' KW_ARRAY KW_OF basicDataType ';'
-		{ $$ = template("%s%s* %s;\n", $1, $6, $2); }
-	| variableDeclaration identifierList ':' KW_ARRAY arrayDimensionDeclarator KW_OF basicDataType ';'
-		{ $$ = template("%s%s %s;\n", $1, $7, getArrayDeclarationString($2, $5)); }
-	| variableDeclaration functionPointerDeclaration
-		{ $$ = template("%s%s\n", $1, $2); }
+variableDeclaration: KW_VAR variableDeclarationList	{ $$ = template("%s", $2); };
+
+variableDeclarationList: 
+	variableDeclarationStatement 
+	| variableDeclarationList variableDeclarationStatement { $$ = template("%s%s", $1, $2); }
+	;
+
+variableDeclarationStatement:
+	identifierList ':' basicDataType ';'
+		{ $$ = template("%s %s;\n", $3, $1); }
+	| identifierList ':' KW_ARRAY KW_OF basicDataType ';'
+		{ $$ = template("%s* %s;\n", $5, $1); }
+	| identifierList ':' KW_ARRAY arrayDimensionDeclarator KW_OF basicDataType ';'
+		{ $$ = template("%s %s;\n", $6, getArrayDeclarationString($1, $4)); }
+	| functionPointerDeclaration ';'
+		{ $$ = template("%s\n", $1); }
 	;
 
 identifierList: 
@@ -182,7 +204,7 @@ arrayIndexer:
 	;
 
 functionPointerDeclaration:
-	identifierList ':' KW_FUNCTION '(' parametersDeclaration ')' ':' dataType ';'	{ $$ = getFunctionPointerDeclaration($1, $8, $5); }
+	identifierList ':' KW_FUNCTION '(' parametersDeclaration ')' ':' dataType	{ $$ = getFunctionPointerDeclaration($1, $8, $5); }
 	;
 
 functionPointerType:
@@ -192,5 +214,51 @@ parametersDeclaration:
 	identifierList ':' dataType									{ $$ = getParameterDeclarationString($1, $3); }
 	| parametersDeclaration ',' identifierList ':' dataType 	{ $$ = template("%s, %s", $1, getParameterDeclarationString($3, $5)); }
 	;
-%%
 
+subprogramList:
+	empty
+	| subprogramList subprogram { $$ = template("%s%s", $1, $2); }
+	;
+
+subprogram:
+	subprogramTitle typedefsOptional variableDeclarationOptional subprogramList subprogramBody	{ $$ = template("%s{\n%s%s%s%s\n}\n", $1, $2, $3, $4, $5); }
+	;
+
+subprogramBody:	KW_BEGIN statements KW_END ';'	{ $$ = template("%s", $2); };
+
+subprogramTitle:
+	KW_PROCEDURE IDENT '(' subprogramParametersDeclarationList ')' ';'	{ $$ = template("void %s(%s)", $2, $4); }
+	| KW_FUNCTION IDENT '(' subprogramParametersDeclarationList ')' ':' dataType ';'	{ $$ = template("%s %s(%s)", $7, $2, $4); }
+	;
+
+subprogramParametersDeclarationList:
+	empty
+	| subprogramParametersDeclaration
+	| subprogramParametersDeclarationList ';' subprogramParametersDeclaration { $$ = template("%s, %s", $1, $3); }
+	;
+
+subprogramParametersDeclaration:
+	identifierList ':' basicDataType
+		{ $$ = getParameterDeclarationString($1, $3); }
+	| identifierList ':' KW_ARRAY KW_OF basicDataType
+		{ $$ = getArrayPointerDeclarationString($1, $5); }
+	| identifierList ':' KW_ARRAY arrayDimensionDeclarator KW_OF basicDataType
+		{ $$ = getArrayDeclarationStringWithType($1, $4, $6); }
+	| identifierList ':' KW_FUNCTION '(' parametersDeclaration ')' ':' dataType
+		{ $$ = getFunctionPointerDeclarationAsParameters($1, $8, $5); }
+	;
+
+variableDeclarationOptional: empty | variableDeclaration;
+
+typedefsOptional: empty | typedefs;
+
+typedefs: KW_TYPE typedefList	{ $$ = template("%s", $2); };
+
+typedefList:
+	typedefStatement
+	| typedefList typedefStatement	{ $$ = template("%s%s", $1, $2); }
+	;
+
+typedefStatement: IDENT '=' dataType ';'	{ $$ = template("typedef %s %s;\n", $3, $1); };
+
+%%

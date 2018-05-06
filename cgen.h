@@ -46,10 +46,19 @@ char* string_ptuc2c(char* P);
 // create array declarations in c using given identifiers' names and dimensions
 char* getArrayDeclarationString(char* identifiers, char* dimensions);
 
+// create array declarations in c using given identifiers' names, dimensions and type
+char* getArrayDeclarationStringWithType(char* identifiers, char* dimensions, char* type);
+
+// create array pointer declarations in c using given identifiers' names and type
+char* getArrayPointerDeclarationString(char* identifiers, char* type);
+
 // create parameter declarations in c using given identifiers' names and type
 char* getParameterDeclarationString(char* identifiers, char* type);
 
 // create function pointer declarations in c using given identifiers' names, type and parameters
 char* getFunctionPointerDeclaration(char* identifiers, char* type, char* parameters);
+
+// create function pointer type Parameters for subprograms in c using given identifiers' names, type and parameters
+char* getFunctionPointerDeclarationAsParameters(char* identifiers, char* type, char* parameters);
 
 #endif
