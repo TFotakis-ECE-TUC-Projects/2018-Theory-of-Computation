@@ -43,6 +43,13 @@ extern const char* c_prologue;
 */
 char* string_ptuc2c(char* P);
 
-char* getDefineArrayString(char* identifiers, char* dimensions);
+// create array declarations in c using given identifiers' names and dimensions
+char* getArrayDeclarationString(char* identifiers, char* dimensions);
+
+// create parameter declarations in c using given identifiers' names and type
+char* getParameterDeclarationString(char* identifiers, char* type);
+
+// create function pointer declarations in c using given identifiers' names, type and parameters
+char* getFunctionPointerDeclaration(char* identifiers, char* type, char* parameters);
 
 #endif

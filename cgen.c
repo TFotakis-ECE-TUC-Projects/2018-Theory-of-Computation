@@ -78,16 +78,44 @@ const char* c_prologue =
 "\n"
 ;
 
-
-char* getDefineArrayString(char* identifiers, char* dimensions){
+char* getArrayDeclarationString(char* identifiers, char* dimensions){
 	char *result;
-	strcpy(result, "");
 	char *token = strtok(identifiers, ",");
+	if(token!= NULL){
+		result = template("%s%s", token, dimensions);
+		token = strtok(NULL, ",");
+	}
     while (token != NULL){
 		result = template("%s, %s%s", result, token, dimensions);
-        token = strtok(NULL, "-");
+        token = strtok(NULL, ",");
     }
 	return result;
 }
 
+char* getParameterDeclarationString(char* identifiers, char* type){
+	char *result;
+	char *token = strtok(identifiers, ",");
+	if(token!= NULL){
+		result = template("%s %s", type, token);
+		token = strtok(NULL, ",");
+	}
+    while (token != NULL){
+		result = template("%s, %s %s", result, type, token);
+        token = strtok(NULL, ",");
+    }
+	return result;
+}
 
+char* getFunctionPointerDeclaration(char* identifiers, char* type, char* parameters){
+	char *result;
+	char *token = strtok(identifiers, ",");
+	if(token!= NULL){
+		result = template("%s (*%s)(%s);\n", type, token, parameters);
+		token = strtok(NULL, ",");
+	}
+    while (token != NULL){
+		result = template("%s%s (*%s)(%s);\n", result, type, token, parameters);
+        token = strtok(NULL, ",");
+    }
+	return result;	
+}

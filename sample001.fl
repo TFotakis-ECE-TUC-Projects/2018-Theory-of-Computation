@@ -3,17 +3,17 @@
 *)
 
 program foo;
-
 var x, y: integer;
 	z: real;
 	a, b: boolean;
 	c: char;
-	array1: array [10][20][30] of integer;
+	array11, array12: array [10][20][30] of integer;
 	array2: array of char;
+	functionPtr1, functionPtr2: function(a1, a2: integer, b:real, c:char, d:boolean):integer;
+	functionPtr3: function(a1, a2: integer, b:real, c:char, d:boolean): function(a1, a2: integer, b:real, c:char, d:boolean):integer;
 
 begin
 	writeString('Hello world');
 	writeString('\n');
 	writeString('\n')
 end.
-

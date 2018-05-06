@@ -61,7 +61,7 @@ ptucc_lex.c: ptucc_lex.l ptucc_parser.tab.h
 	$(FLEX) -o ptucc_lex.c ptucc_lex.l
 
 ptucc_parser.tab.c ptucc_parser.tab.h: ptucc_parser.y
-	$(BISON) -d ptucc_parser.y
+	$(BISON) -dvr all ptucc_parser.y
 
 test: ptucc
 	./ptucc < sample001.fl > sample001.c
