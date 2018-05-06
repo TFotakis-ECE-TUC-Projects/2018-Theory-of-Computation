@@ -25,13 +25,11 @@ char* get_macro(char* name);
 
 ID [a-zA-Z_][0-9a-zA-Z_]*
 DIGIT  [0-9]
-NUMBER  {DIGIT}{DIGIT}*
-INTEGER [0]|([1-9]{DIGIT}*)
+NUMBER  [0]|([1-9]{DIGIT}*)
+INTEGER [+-]?{NUMBER}
 DECIMAL ("."{NUMBER})|({INTEGER}("."{NUMBER}?)?)
 REAL    [+-]?{DECIMAL}([eE][+-]?{INTEGER})?
-/*STRING  '[^'\n]*'*/
-STRING  \'[^'\\\n]*\'
-CONST_STRING (\"(\\.|[^"\\\n])*\")|(\'(\\.|[^'\\\n])*\')
+STRING (\"(\\.|[^"\\\n])*\")|(\'(\\.|[^'\\\n])*\')
 CASTING [(]{ID}[)]
 
 %x comment
@@ -39,7 +37,6 @@ CASTING [(]{ID}[)]
 %x macro
 
 %%
-
 @defmacro[ \r\t]+       BEGIN(macro);
 <macro>{ID}             {
 							/* Store macro name */
@@ -93,9 +90,7 @@ true					return KW_TRUE;
 false					return KW_FALSE;
 
 
-{CONST_STRING}			{ yylval.crepr = strdup(yytext); return CONST_STRING; }
 {STRING}				{ yylval.crepr = strdup(yytext); return STRING; }
-
 {ID}  					{
 						   char* def = get_macro(yytext);
 						   if(def==NULL) {
@@ -106,8 +101,8 @@ false					return KW_FALSE;
 						   	  unput(def[i-1]);
 						   }
 						}
-{INTEGER}				{ yylval.crepr = strdup(yytext); return INT; }
 {NUMBER}				{ yylval.crepr = strdup(yytext); return POSINT; }
+{INTEGER}				{ yylval.crepr = strdup(yytext); return INT; }
 {REAL}					{ yylval.crepr = strdup(yytext); return REAL; }
 {CASTING}				{ yylval.crepr = strdup(yytext); return CASTING; }
 

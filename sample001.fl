@@ -4,8 +4,16 @@
 
 program foo;
 
+var x, y: integer;
+	z: real;
+	a, b: boolean;
+	c: char;
+	array1: array [10][20][30] of integer;
+	array2: array of char;
+
 begin
 	writeString('Hello world');
+	writeString('\n');
 	writeString('\n')
 end.
 

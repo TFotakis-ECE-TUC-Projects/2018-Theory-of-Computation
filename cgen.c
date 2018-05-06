@@ -79,6 +79,15 @@ const char* c_prologue =
 ;
 
 
-
+char* getDefineArrayString(char* identifiers, char* dimensions){
+	char *result;
+	strcpy(result, "");
+	char *token = strtok(identifiers, ",");
+    while (token != NULL){
+		result = template("%s, %s%s", result, token, dimensions);
+        token = strtok(NULL, "-");
+    }
+	return result;
+}
 
 

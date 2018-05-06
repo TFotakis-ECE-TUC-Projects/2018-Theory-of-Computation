@@ -43,5 +43,6 @@ extern const char* c_prologue;
 */
 char* string_ptuc2c(char* P);
 
+char* getDefineArrayString(char* identifiers, char* dimensions);
 
 #endif

@@ -65,9 +65,23 @@ ptucc_parser.tab.c ptucc_parser.tab.h: ptucc_parser.y
 
 test: ptucc
 	./ptucc < sample001.fl > sample001.c
-	gcc -Wall -std=c11 -o sample001 sample001.c
+	gcc -Wall -std=c99 -o sample001 sample001.c
 	./sample001
 
+# Custom Commands
+usProud: syntact lexer compileCompliler compile
+
+lexer: ptucc_lex.l
+	$(FLEX) ptucc_lex.l
+
+syntact: ptucc_parser.y
+	$(BISON) -dvr all ptucc_parser.y
+
+compileCompliler:
+	$(CC) -o ptucc lex.yy.c ptucc_parser.tab.c -lfl
+
+compile:
+	./ptucc < sample001.fl > sample001.c
 
 #-----------------------------------------------------
 # Build control
@@ -80,6 +94,8 @@ distclean: realclean
 realclean:
 	-rm $(C_PROG) $(C_OBJECTS) $(C_GEN) .depend *.o sample001.c sample001
 	-rm .depend
+	-rm lex.yy.c
+	-rm ptucc_parser.output
 	-touch .depend
 
 depend: $(C_SOURCES)
