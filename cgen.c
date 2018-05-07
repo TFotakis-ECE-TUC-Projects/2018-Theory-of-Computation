@@ -37,12 +37,6 @@ char* template(const char* pat, ...){
 /* Helper functions */
 
 char* string_ptuc2c(char* P){
-	/*
-		This implementation is 
-		***** NOT CORRECT ACCORDING TO THE PROJECT ******
-	*/
-
-	/* Just chech and change the first and last characters */
 	int Plen = strlen(P);
 	assert(Plen>=2);
 	P[0] = '"';

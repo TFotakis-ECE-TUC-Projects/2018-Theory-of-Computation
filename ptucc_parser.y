@@ -6,11 +6,9 @@
 extern int yylex(void);
 extern int line_num;
 %}
-
 %union{
 	char* crepr;
 }
-
 
 %token <crepr> IDENT
 %token <crepr> POSINT
@@ -92,19 +90,27 @@ extern int line_num;
 %type <crepr> typedefList
 %type <crepr> typedefStatement
 %type <crepr> command
+%type <crepr> ifStatement
+%type <crepr> flowControlBody
+%type <crepr> forStatement
+%type <crepr> whileStatement
 
 %left KW_OR OP_OR
 %left KW_AND OP_AND
 %left '=' OP_DIFFERENT '<' '>' OP_LESS_EQUAL OP_GREATER_EQUAL
 %left '+' '-'
 %left '*' '/' KW_DIV KW_MOD
-%left KW_NOT '!'
+%nonassoc USIGN
+%nonassoc UNOT
+
+%right KW_THEN KW_ELSE
 
 %%
+empty: 
+	{ $$ = ""; };
 
-empty: { $$ = ""; };
-
-program:  program_decl typedefsOptional variableDeclarationOptional subprogramList body  '.'
+program:
+	program_decl typedefsOptional variableDeclarationOptional subprogramList body  '.'
 	{ 
 		/* We have a successful parse! 
 			Check for any errors and generate output. 
@@ -120,13 +126,15 @@ program:  program_decl typedefsOptional variableDeclarationOptional subprogramLi
 	}
 	;
 
-program_decl: KW_PROGRAM IDENT ';'  	{ $$ = $2; };
+program_decl: 
+	KW_PROGRAM IDENT ';' { $$ = $2; };
 
-body: KW_BEGIN statements KW_END   		{ $$ = template("{\n %s\nreturn 0;\n}\n", $2); };
+body: 
+	KW_BEGIN statements KW_END { $$ = template("{\n%s\treturn 0;\n}\n", $2); };
 
 statements: 
 	empty
-	| statements statement_list			{ $$ = template("%s%s", $1, $2); }
+	| statement_list
 	;
 
 statement_list: 
@@ -135,13 +143,15 @@ statement_list:
 	; 
 
 statement: 
-	proc_call  				{ $$ = template("%s;\n", $1); }
-	| command
+	proc_call  	{ $$ = template("\t%s;\n", $1); }
+	| command 	{ $$ = template("\t%s;\n", $1); }
 	;
 
-proc_call: IDENT '(' arguments ')' 	{ $$ = template("%s(%s)", $1, $3); };
+proc_call: 
+	IDENT '(' arguments ')' { $$ = template("%s(%s)", $1, $3); };
 
-arguments: empty | arglist 			{ $$ = $1; };
+arguments: 
+	empty | arglist { $$ = $1; };
 
 arglist: 
 	expression						{ $$ = $1; }
@@ -153,7 +163,12 @@ expression:
 	| INT
 	| REAL
 	| STRING 									{ $$ = string_ptuc2c($1); }
+	| dataType
 	| '(' expression ')' 						{ $$ = template("(%s)", $2); }
+	| KW_NOT expression %prec UNOT				{ $$ = template("!%s", $2); }
+	| "!" expression %prec UNOT					{ $$ = template("!%s", $2); }
+	| '+' expression %prec USIGN				{ $$ = template("+%s", $2); }
+	| '-' expression %prec USIGN				{ $$ = template("-%s", $2); }
 	| expression '*' expression 				{ $$ = template("%s * %s", $1, $3); }
 	| expression '/' expression 				{ $$ = template("%s / %s", $1, $3); }
 	| expression KW_DIV expression 				{ $$ = template("%s / %s", $1, $3); }
@@ -170,20 +185,18 @@ expression:
 	| expression OP_AND expression 				{ $$ = template("%s && %s", $1, $3); }
 	| expression KW_OR expression 				{ $$ = template("%s || %s", $1, $3); }
 	| expression OP_OR expression 				{ $$ = template("%s || %s", $1, $3); }
-	| KW_NOT expression 						{ $$ = template("!%s", $2); }
-	| "!" expression 							{ $$ = template("!%s", $2); }
-	| '+' expression 							{ $$ = template("+%s", $2); }
-	| '-' expression 							{ $$ = template("-%s", $2); }
-	| CASTING		 							{ $$ = template("%s", $1); }
 	;
 
-variableDeclarationOptional: empty | variableDeclaration;
+variableDeclarationOptional: 
+	empty | variableDeclaration;
 
-variableDeclaration: KW_VAR variableDeclarationList	{ $$ = template("%s", $2); };
+variableDeclaration: 
+	KW_VAR variableDeclarationList	{ $$ = template("%s", $2); };
 
 variableDeclarationList: 
 	variableDeclarationStatement 
-	| variableDeclarationList variableDeclarationStatement { $$ = template("%s%s", $1, $2); }
+	| variableDeclarationList variableDeclarationStatement
+		{ $$ = template("%s%s", $1, $2); }
 	;
 
 variableDeclarationStatement:
@@ -204,9 +217,12 @@ identifierList:
 
 dataType:
 	basicDataType
-	| KW_ARRAY KW_OF basicDataType							{ $$ = template("%s*", $3); }
-	| KW_ARRAY arrayDimensionDeclarator KW_OF basicDataType	{ $$ = template("%s%s", $4, $2); }
+	| KW_ARRAY KW_OF basicDataType							
+		{ $$ = template("%s*", $3); }
+	| KW_ARRAY arrayDimensionDeclarator KW_OF basicDataType	
+		{ $$ = template("%s%s", $4, $2); }
 	| functionPointerType
+	| IDENT
 	;
 
 basicDataType:
@@ -275,16 +291,19 @@ subprogramParametersDeclaration:
 	;
 
 
-typedefsOptional: empty | typedefs;
+typedefsOptional: 
+	empty | typedefs;
 
-typedefs: KW_TYPE typedefList	{ $$ = template("%s", $2); };
+typedefs: 
+	KW_TYPE typedefList { $$ = template("%s", $2); };
 
 typedefList:
 	typedefStatement
 	| typedefList typedefStatement	{ $$ = template("%s%s", $1, $2); }
 	;
 
-typedefStatement: IDENT '=' dataType ';'	{ $$ = template("typedef %s %s;\n", $3, $1); };
+typedefStatement: 
+	IDENT '=' dataType ';'	{ $$ = template("typedef %s %s;\n", $3, $1); };
 
 command:
 	IDENT OP_ASSIGN expression 
@@ -297,16 +316,34 @@ command:
 		{ $$ = template("%s: %s", $1, $3); }
 	| KW_GOTO IDENT 
 		{ $$ = template("goto %s;\n", $2); }
-	| KW_IF expression KW_THEN statements 
+	| ifStatement
+	| forStatement
+	| whileStatement
+	;
+
+ifStatement:
+	KW_IF expression KW_THEN flowControlBody
 		{ $$ = template("if(%s){\n%s\n}\n", $2, $4); }
-	| KW_IF expression KW_THEN statements KW_ELSE statements 
-		{ $$ = template("if(%s){\n%s\n}else{\n%s\n}", $2, $4, $6); }
-	| KW_FOR IDENT OP_ASSIGN expression KW_TO expression KW_DO statements 
+	| KW_IF expression KW_THEN flowControlBody KW_ELSE flowControlBody
+		{ $$ = template("if(%s){\n%s\n}else{\n%s\n}\n", $2, $4, $6); }
+	;
+
+flowControlBody:
+	statement
+	| KW_BEGIN statements KW_END ';' { $$ = template("%s", $2); }
+	;
+
+forStatement:
+	KW_FOR IDENT OP_ASSIGN expression KW_TO expression KW_DO flowControlBody 
 		{ $$ = template("for(int %s=$s; i<=%s; i++){\n%s\n}\n", $2, $4, $6, $8); }
-	| KW_FOR IDENT OP_ASSIGN expression KW_DOWNTO expression KW_DO statements 
+	| KW_FOR IDENT OP_ASSIGN expression KW_DOWNTO expression KW_DO flowControlBody 
 		{ $$ = template("for(int %s=$s; i>=%s; i--){\n%s\n}\n", $2, $4, $6, $8); }
-	| KW_WHILE expression KW_DO statements 
+	;
+
+whileStatement:
+	KW_WHILE expression KW_DO flowControlBody 
 		{ $$ = template("while(%s){\n%s\n}\n", $2, $4); }
-	| KW_REPEAT statements KW_UNTIL expression 
+	| KW_REPEAT flowControlBody KW_UNTIL expression 
 		{ $$ = template("do{\n%s\n}while(%s);\n", $2, $4); }
+	;
 %%
