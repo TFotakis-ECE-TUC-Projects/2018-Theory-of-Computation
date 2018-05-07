@@ -47,7 +47,7 @@ end;
 begin
 	@defmacro my2pi (2 * 3.14)
 	writeString(my2pi);
-	writeString('Hello world');
-	writeString('"');
+	writeString('Hello" "world"');
+	writeString('');
 	writeString('\n')
 end.

@@ -35,14 +35,24 @@ char* template(const char* pat, ...){
 }
 
 /* Helper functions */
-
 char* string_ptuc2c(char* P){
 	int Plen = strlen(P);
 	assert(Plen>=2);
 	P[0] = '"';
 	P[Plen-1] = '"';
-
-	return P;
+	char *result = "\"";
+	char *token1 = strtok(P, "\"");
+	char *token2 = strtok(NULL, "\"");
+	while(token1 != NULL){
+		if(token2 == NULL)
+			result = template("%s%s", result, token1);
+		else
+			result = template("%s%s\\\"", result, token1);
+		token1 = token2;
+		token2 = strtok(NULL, "\"");
+	}
+	result = template("%s\"", result);
+	return result;
 }
 
 
