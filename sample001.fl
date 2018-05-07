@@ -22,13 +22,32 @@ type 	tzanis = integer;
 	type 	tzanis = integer;
 			kri8arakos = real;
 	begin
-		writeString('')
+		toLabeltouKritharakomon: result := 1 + 3;
+		goto toLabeltouKritharakomon;
+		writeInteger(1 + 3, 5 * 8);
+		return
 	end;
 begin
-	writeString('')
+	writeInteger(1 + 3);
+	writeInteger(1 - 3);
+	writeInteger(1 * 3);
+	writeInteger(1 / 3);
+	writeInteger(1 div 3);
+	writeInteger(1 mod 3);
+	writeInteger(1 = 3);
+	writeInteger(1 <> 3);
+	writeInteger(1 < 3);
+	writeInteger(1 > 3);
+	writeInteger(1 <= 3);
+	writeInteger(1 >= 3);
+	writeInteger(1 and 3);
+	writeInteger(1 && 3)
+	
 end;
 
 begin
+@defmacro my2pi 2
+my2pi
 	writeString('Hello world');
 	writeString('\n');
 	writeString('\n')

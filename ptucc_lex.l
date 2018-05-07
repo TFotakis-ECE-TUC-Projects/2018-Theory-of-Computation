@@ -30,7 +30,6 @@ INTEGER [+-]?{NUMBER}
 DECIMAL ("."{NUMBER})|({INTEGER}("."{NUMBER}?)?)
 REAL    [+-]?{DECIMAL}([eE][+-]?{INTEGER})?
 STRING (\"(\\.|[^"\\\n])*\")|(\'(\\.|[^'\\\n])*\')
-CASTING [(]{ID}[)]
 
 %x comment
 %x inline_comment
@@ -105,7 +104,6 @@ type					return KW_TYPE;
 {NUMBER}				{ yylval.crepr = strdup(yytext); return POSINT; }
 {INTEGER}				{ yylval.crepr = strdup(yytext); return INT; }
 {REAL}					{ yylval.crepr = strdup(yytext); return REAL; }
-{CASTING}				{ yylval.crepr = strdup(yytext); return CASTING; }
 
 "+"						return '+';
 "-"						return '-';
