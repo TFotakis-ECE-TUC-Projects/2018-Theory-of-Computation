@@ -163,8 +163,9 @@ expression:
 	| INT
 	| REAL
 	| STRING 									{ $$ = string_ptuc2c($1); }
-	| dataType
+	| IDENT
 	| '(' expression ')' 						{ $$ = template("(%s)", $2); }
+	| '(' dataType ')' expression				{ $$ = template("(%s) %s", $2, $4); }
 	| KW_NOT expression %prec UNOT				{ $$ = template("!%s", $2); }
 	| "!" expression %prec UNOT					{ $$ = template("!%s", $2); }
 	| '+' expression %prec USIGN				{ $$ = template("+%s", $2); }
@@ -185,6 +186,7 @@ expression:
 	| expression OP_AND expression 				{ $$ = template("%s && %s", $1, $3); }
 	| expression KW_OR expression 				{ $$ = template("%s || %s", $1, $3); }
 	| expression OP_OR expression 				{ $$ = template("%s || %s", $1, $3); }
+	| proc_call
 	;
 
 variableDeclarationOptional: 

@@ -5,3 +5,5 @@ ptucc_scan
 ptucc_scan
 ptucc_lex.c
 ptucc
+*.output
+!*.fl

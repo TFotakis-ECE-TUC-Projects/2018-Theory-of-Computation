@@ -1,0 +1,4 @@
+program useless;
+begin
+	j := (integer) (N - n) + cube(k);
+end.
