@@ -4,18 +4,18 @@ begin
 		result := prime(-n)
 	else if n < 2 then
 		result := false
-	else if n = 2 then
-		result := true
-	else if n mod 2 = 0 then
-		result := false
-	else begin
-		i := 3;
-		isPrime := true;
-		while isPrime and (i < n div 2) do begin
-			isPrime := n mod i <> 0;
-			i := i+2
-		end;
-		result := isPrime
+		else if n = 2 then
+			result := true
+			else if n mod 2 = 0 then
+				result := false
+				else begin
+					i := 3;
+					isPrime := true;
+					while isPrime and (i < n div 2) do begin
+						isPrime := n mod i <> 0;
+						i := i[j+2]
+					end;
+					result := isPrime
 	end;
 	return
 end.

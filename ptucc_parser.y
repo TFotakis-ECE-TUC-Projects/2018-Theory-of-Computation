@@ -155,7 +155,7 @@ statement_list:
 	; 
 
 statement: 
-	proc_call { $$ = template("%s;\n", $1); }
+	proc_call { $$ = template("\t%s;\n", $1); }
 	| command
 	;
 
@@ -321,9 +321,9 @@ subprogramList:
 
 subprogram:	
 	KW_PROCEDURE IDENT '(' subprogramParametersDeclarationList ')' ';' typedefsOptional variableDeclarationOptional subprogramList subprogramBody	
-		{ $$ = template("void %s(%s){\n%s%s%s%s\n}\n", $2, $4, $7, $8, $9, $10); }
+		{ $$ = template("void %s(%s){\n%s%s%s%s}\n", $2, $4, $7, $8, $9, $10); }
 	| KW_FUNCTION IDENT '(' subprogramParametersDeclarationList ')' ':' dataType ';' typedefsOptional variableDeclarationOptional subprogramList subprogramBody	
-		{ $$ = template("%s %s(%s){\n%s\n%s result;\n%s%s%s\n}\n", $7, $2, $4, $9, $7, $10, $11, $12); }
+		{ $$ = template("%s %s(%s){\n%s\t%s result;\n%s%s%s}\n", $7, $2, $4, $9, $7, $10, $11, $12); }
 	;
 
 subprogramBody:	
