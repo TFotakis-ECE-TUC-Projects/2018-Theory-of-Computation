@@ -69,8 +69,6 @@ test: ptucc
 	./sample001
 
 # Custom Commands
-usProud: syntact lexer compileCompliler compile
-
 lexer: ptucc_lex.l
 	$(FLEX) ptucc_lex.l
 
@@ -82,6 +80,21 @@ compileCompliler:
 
 compile:
 	./ptucc < sample001.fl > sample001.c
+
+helloWorld: ptucc_scan ptucc
+	./ptucc < programs/hello_world.fl > programs/build/hello_world.c
+	gcc -Wall -std=c99 -o programs/build/hello_world programs/build/hello_world.c
+	./programs/build/hello_world
+
+useless: ptucc_scan ptucc
+	./ptucc < programs/useless.fl > programs/build/useless.c
+	gcc -Wall -std=c99 -o programs/build/useless programs/build/useless.c
+	./programs/build/useless
+
+calculate: ptucc_scan ptucc
+	./ptucc < programs/calculate.fl > programs/build/calculate.c
+	gcc -Wall -std=c99 -o programs/build/calculate programs/build/calculate.c
+	./programs/build/calculate
 
 #-----------------------------------------------------
 # Build control
@@ -97,6 +110,8 @@ realclean:
 	-rm lex.yy.c
 	-rm ptucc_parser.output
 	-touch .depend
+	-rm programs/build/*
+	-cp ptuclib.h programs/build/ptuclib.h
 
 depend: $(C_SOURCES)
 	$(CC) $(CFLAGS) -MM $(C_SOURCES) > .depend
