@@ -12,7 +12,6 @@ extern int line_num;
 
 %token <crepr> IDENT
 %token <crepr> POSINT
-%token <crepr> INT 
 %token <crepr> REAL 
 %token <crepr> STRING
 
@@ -66,8 +65,20 @@ extern int line_num;
 %type <crepr> proc_call
 %type <crepr> arguments
 %type <crepr> arglist
+
 %type <crepr> expression
+%type <crepr> primaryExpression
+%type <crepr> notExpression
+%type <crepr> signExpression
+%type <crepr> castExpression
+%type <crepr> multiplicativeExpression
+%type <crepr> additiveExpression
+%type <crepr> relationalExpression
+%type <crepr> logicalAndExpression
+%type <crepr> logicalOrExpression
+
 %type <crepr> dataType
+%type <crepr> dataTypeNoIdent
 %type <crepr> variableDeclaration
 %type <crepr> variableDeclarationStatement
 %type <crepr> variableDeclarationList
@@ -91,9 +102,10 @@ extern int line_num;
 %type <crepr> typedefStatement
 %type <crepr> command
 %type <crepr> ifStatement
-%type <crepr> flowControlBody
 %type <crepr> forStatement
 %type <crepr> whileStatement
+%type <crepr> flowControlBody
+
 
 %left KW_OR OP_OR
 %left KW_AND OP_AND
@@ -116,12 +128,12 @@ program:
 			Check for any errors and generate output. 
 		*/
 		if(yyerror_count==0) {
+			printf("/* program  %s */\n", $1);
 			puts(c_prologue);
-			printf("/* program  %s */ \n\n", $1);
-			printf("%s\n\n", $2);
-			printf("%s\n\n", $3);
-			printf("%s\n\n", $4);
-			printf("int main() %s \n", $5);
+			printf("%s", $2);
+			printf("%s", $3);
+			printf("%s", $4);
+			printf("int main() %s", $5);
 		}
 	}
 	;
@@ -143,8 +155,8 @@ statement_list:
 	; 
 
 statement: 
-	proc_call  	{ $$ = template("\t%s;\n", $1); }
-	| command 	{ $$ = template("\t%s;\n", $1); }
+	proc_call { $$ = template("%s;\n", $1); }
+	| command
 	;
 
 proc_call: 
@@ -158,35 +170,75 @@ arglist:
     | arglist ',' expression 		{ $$ = template("%s,%s", $1, $3);  }
 	;
 
-expression: 
+expression:
+	logicalOrExpression
+	;
+
+primaryExpression:
 	POSINT
-	| INT
 	| REAL
 	| STRING 									{ $$ = string_ptuc2c($1); }
 	| IDENT
-	| '(' expression ')' 						{ $$ = template("(%s)", $2); }
-	| '(' dataType ')' expression				{ $$ = template("(%s) %s", $2, $4); }
-	| KW_NOT expression %prec UNOT				{ $$ = template("!%s", $2); }
-	| "!" expression %prec UNOT					{ $$ = template("!%s", $2); }
-	| '+' expression %prec USIGN				{ $$ = template("+%s", $2); }
-	| '-' expression %prec USIGN				{ $$ = template("-%s", $2); }
-	| expression '*' expression 				{ $$ = template("%s * %s", $1, $3); }
-	| expression '/' expression 				{ $$ = template("%s / %s", $1, $3); }
-	| expression KW_DIV expression 				{ $$ = template("%s / %s", $1, $3); }
-	| expression KW_MOD expression 				{ $$ = template("%s % %s", $1, $3); }
-	| expression '+' expression 				{ $$ = template("%s + %s", $1, $3); }
-	| expression '-' expression 				{ $$ = template("%s - %s", $1, $3); }
-	| expression '=' expression 				{ $$ = template("%s == %s", $1, $3); }
-	| expression OP_DIFFERENT expression 		{ $$ = template("%s != %s", $1, $3); }
-	| expression '<' expression 				{ $$ = template("%s < %s", $1, $3); }
-	| expression '>' expression 				{ $$ = template("%s > %s", $1, $3); }
-	| expression OP_LESS_EQUAL expression 		{ $$ = template("%s <= %s", $1, $3); }
-	| expression OP_GREATER_EQUAL expression 	{ $$ = template("%s >= %s", $1, $3); }
-	| expression KW_AND expression 				{ $$ = template("%s && %s", $1, $3); }
-	| expression OP_AND expression 				{ $$ = template("%s && %s", $1, $3); }
-	| expression KW_OR expression 				{ $$ = template("%s || %s", $1, $3); }
-	| expression OP_OR expression 				{ $$ = template("%s || %s", $1, $3); }
+	| IDENT '[' expression ']'					{ $$ = template("%s[%s]", $1, $3); }
+	| KW_TRUE									{ $$ = "1"; }
+	| KW_FALSE									{ $$ = "0"; }
 	| proc_call
+	| '(' expression ')'  						{ $$ = template("(%s)", $2); }
+	;
+
+notExpression:
+	primaryExpression
+	| KW_NOT primaryExpression %prec UNOT		{ $$ = template("!%s", $2); }
+	| "!" primaryExpression %prec UNOT			{ $$ = template("!%s", $2); }
+	;
+
+signExpression:
+	notExpression
+	| '+' notExpression %prec USIGN			{ $$ = template("+%s", $2); }
+	| '-' notExpression %prec USIGN			{ $$ = template("-%s", $2); }
+	;
+
+castExpression:
+	signExpression
+	| '(' dataTypeNoIdent ')' signExpression { $$ = template("(%s) %s", $2, $4); }
+	;
+
+multiplicativeExpression:
+	castExpression
+	| multiplicativeExpression '*' castExpression 					{ $$ = template("%s * %s", $1, $3); }
+	| multiplicativeExpression '/' castExpression 					{ $$ = template("%s / %s", $1, $3); }
+	| multiplicativeExpression KW_DIV castExpression 				{ $$ = template("%s / %s", $1, $3); }
+	| multiplicativeExpression KW_MOD castExpression 				{ $$ = template("%s %% %s", $1, $3); }
+	;
+
+additiveExpression:
+	multiplicativeExpression
+	| additiveExpression '+' multiplicativeExpression 				{ $$ = template("%s + %s", $1, $3); }
+	| additiveExpression '-' multiplicativeExpression 				{ $$ = template("%s - %s", $1, $3); }
+	;
+
+relationalExpression:
+	additiveExpression
+	| relationalExpression '=' additiveExpression 				{ $$ = template("%s == %s", $1, $3); }
+	| relationalExpression OP_DIFFERENT additiveExpression 		{ $$ = template("%s != %s", $1, $3); }
+	| relationalExpression '<' additiveExpression 				{ $$ = template("%s < %s", $1, $3); }
+	| relationalExpression '>' additiveExpression 				{ $$ = template("%s > %s", $1, $3); }
+	| relationalExpression OP_LESS_EQUAL additiveExpression 	{ $$ = template("%s <= %s", $1, $3); }
+	| relationalExpression OP_GREATER_EQUAL additiveExpression 	{ $$ = template("%s >= %s", $1, $3); }
+	;
+
+
+
+logicalAndExpression:
+	relationalExpression
+	| logicalAndExpression KW_AND relationalExpression 				{ $$ = template("%s && %s", $1, $3); }
+	| logicalAndExpression OP_AND relationalExpression 				{ $$ = template("%s && %s", $1, $3); }
+	;
+
+logicalOrExpression:	
+	logicalAndExpression
+	| logicalOrExpression KW_OR logicalAndExpression 				{ $$ = template("%s || %s", $1, $3); }
+	| logicalOrExpression OP_OR logicalAndExpression 				{ $$ = template("%s || %s", $1, $3); }
 	;
 
 variableDeclarationOptional: 
@@ -218,13 +270,17 @@ identifierList:
 	;
 
 dataType:
+	dataTypeNoIdent
+	| IDENT
+	;
+
+dataTypeNoIdent:
 	basicDataType
 	| KW_ARRAY KW_OF basicDataType							
 		{ $$ = template("%s*", $3); }
 	| KW_ARRAY arrayDimensionDeclarator KW_OF basicDataType	
 		{ $$ = template("%s%s", $4, $2); }
 	| functionPointerType
-	| IDENT
 	;
 
 basicDataType:
@@ -309,15 +365,15 @@ typedefStatement:
 
 command:
 	IDENT OP_ASSIGN expression 
-		{ $$ = template("%s = %s;\n", $1, $3); }
+		{ $$ = template("\t%s = %s;\n", $1, $3); }
 	| KW_RESULT OP_ASSIGN expression 
-		{ $$ = template("result = %s;\n", $3); }
+		{ $$ = template("\tresult = %s;\n", $3); }
 	| KW_RETURN 
-		{ $$ = template("return result;\n"); }
+		{ $$ = template("\treturn result;\n"); }
 	| IDENT ':' command 
-		{ $$ = template("%s: %s", $1, $3); }
+		{ $$ = template("\t%s: %s;\n", $1, $3); }
 	| KW_GOTO IDENT 
-		{ $$ = template("goto %s;\n", $2); }
+		{ $$ = template("\tgoto %s;\n", $2); }
 	| ifStatement
 	| forStatement
 	| whileStatement
@@ -325,27 +381,28 @@ command:
 
 ifStatement:
 	KW_IF expression KW_THEN flowControlBody
-		{ $$ = template("if(%s){\n%s\n}\n", $2, $4); }
+		{ $$ = template("\tif(%s){\n%s\t}\n", $2, $4); }
 	| KW_IF expression KW_THEN flowControlBody KW_ELSE flowControlBody
-		{ $$ = template("if(%s){\n%s\n}else{\n%s\n}\n", $2, $4, $6); }
-	;
-
-flowControlBody:
-	statement
-	| KW_BEGIN statements KW_END ';' { $$ = template("%s", $2); }
+		{ $$ = template("\tif(%s){\n%s\t}else{\n%s\t}\n", $2, $4, $6); }
 	;
 
 forStatement:
 	KW_FOR IDENT OP_ASSIGN expression KW_TO expression KW_DO flowControlBody 
-		{ $$ = template("for(int %s=$s; i<=%s; i++){\n%s\n}\n", $2, $4, $6, $8); }
+		{ $$ = template("\tfor(int %s=$s; i<=%s; i++){\n%s\t}\n", $2, $4, $6, $8); }
 	| KW_FOR IDENT OP_ASSIGN expression KW_DOWNTO expression KW_DO flowControlBody 
-		{ $$ = template("for(int %s=$s; i>=%s; i--){\n%s\n}\n", $2, $4, $6, $8); }
+		{ $$ = template("\tfor(int %s=$s; i>=%s; i--){\n%s\t}\n", $2, $4, $6, $8); }
 	;
 
 whileStatement:
 	KW_WHILE expression KW_DO flowControlBody 
-		{ $$ = template("while(%s){\n%s\n}\n", $2, $4); }
+		{ $$ = template("\twhile(%s){\n%s\t}\n", $2, $4); }
 	| KW_REPEAT flowControlBody KW_UNTIL expression 
-		{ $$ = template("do{\n%s\n}while(%s);\n", $2, $4); }
+		{ $$ = template("\tdo{\n%s\t}while(%s);\n", $2, $4); }
 	;
+
+flowControlBody:
+	statement
+	| KW_BEGIN statements KW_END { $$ = template("%s", $2); }
+	;
+
 %%

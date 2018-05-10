@@ -25,10 +25,9 @@ char* get_macro(char* name);
 
 ID [a-zA-Z_][0-9a-zA-Z_]*
 DIGIT  [0-9]
-NUMBER  [0]|([1-9]{DIGIT}*)
-INTEGER [+-]?{NUMBER}
-DECIMAL ("."{NUMBER})|({INTEGER}("."{NUMBER}?)?)
-REAL    [+-]?{DECIMAL}([eE][+-]?{INTEGER})?
+INTEGER  [0]|([1-9]{DIGIT}*)
+DECIMAL ("."{INTEGER})|({INTEGER}("."{INTEGER}?)?)
+REAL    {DECIMAL}([eE][+-]?{INTEGER})?
 STRING (\"(\\.|[^"\\\n])*\")|(\'(\\.|[^'\\\n])*\')
 
 %x comment
@@ -101,8 +100,7 @@ type					return KW_TYPE;
 						   	  unput(def[i-1]);
 						   }
 						}
-{NUMBER}				{ yylval.crepr = strdup(yytext); return POSINT; }
-{INTEGER}				{ yylval.crepr = strdup(yytext); return INT; }
+{INTEGER}				{ yylval.crepr = strdup(yytext); return POSINT; }
 {REAL}					{ yylval.crepr = strdup(yytext); return REAL; }
 
 "+"						return '+';

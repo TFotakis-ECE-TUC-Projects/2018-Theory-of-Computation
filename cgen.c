@@ -70,8 +70,7 @@ char* string_ptuc2c(char* P){
 int yyerror_count = 0;
 
 const char* c_prologue = 
-"#include \"ptuclib.h\"\n"
-"\n"
+"#include \"ptuclib.h\""
 ;
 
 char* getArrayDeclarationString(char* identifiers, char* dimensions){
