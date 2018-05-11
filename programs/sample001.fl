@@ -1,21 +1,9 @@
 program useless;
+type tzanis = integer;
+kri8 = array of char;
+@defmacro my2pi (2*3.14159265)
+var x : tzanis;
+y : kri8;
 begin
-	if n < 0 then
-		result := prime(-n)
-	else if n < 2 then
-		result := false
-		else if n = 2 then
-			result := true
-			else if n mod 2 = 0 then
-				result := false
-				else begin
-					i := 3;
-					isPrime := true;
-					while isPrime and (i < n div 2) do begin
-						isPrime := n mod i <> 0;
-						i := i[j+2]
-					end;
-					result := isPrime
-	end;
-	return
+	x := my2pi
 end.

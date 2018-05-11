@@ -33,26 +33,48 @@ STRING (\"(\\.|[^"\\\n])*\")|(\'(\\.|[^'\\\n])*\')
 %x comment
 %x inline_comment
 %x macro
+%x typeDefinition
 
 %%
 @defmacro[ \r\t]+       BEGIN(macro);
-<macro>{ID}             {
-							/* Store macro name */
-							char* name = strdup(yytext);
-							char* def = NULL;
-							size_t deflen = 0;
-							char c;
+<macro>{ID} {
+	/* Store macro name */
+	char* name = strdup(yytext);
+	char* def = NULL;
+	size_t deflen = 0;
+	char c;
 
-							FILE* deff = open_memstream(&def, &deflen);
+	FILE* deff = open_memstream(&def, &deflen);
 
-							while((c=input())!='\n')
-							   fputc(c, deff);
-							fclose(deff);
+	while((c=input())!='\n'){
+		fputc(c, deff);
+	}
+	fclose(deff);
+	// printf("name: %s, def: %s, c: %d\n", name, def, c);
 
-							if(!set_macro(name, def))
-								yyerror("lexer error: failed to define macro '%s'\n", name);
-							BEGIN(INITIAL);
-						};
+	if(!set_macro(name, def))
+		yyerror("lexer error: failed to define macro '%s'\n", name);
+	BEGIN(INITIAL);
+};
+
+type[ \r\t\n]* BEGIN(typeDefinition);
+<typeDefinition>[^;]* {
+	char* name = strdup(yytext);
+	char *token = strtok(name, ";");
+	char *typeName = strtok(token, "=");
+	char *type = strtok(NULL, "=");
+	char *typeNameNoSpace = strtok(typeName, " ");
+	// printf("typeName: %s, type: %s\n", typeName, type);
+	// input();
+	if(!set_macro(typeNameNoSpace, type))
+		yyerror("lexer error: failed to define macro '%s'\n", name);
+};
+<typeDefinition>[;][ \r\t\n]*
+<typeDefinition>[;][ \r\t\n]*"var"					{ BEGIN(INITIAL); return KW_VAR; }
+<typeDefinition>[;][ \r\t\n]*"procedure"				{ BEGIN(INITIAL); return KW_PROCEDURE; }
+<typeDefinition>[;][ \r\t\n]*"function"				{ BEGIN(INITIAL); return KW_FUNCTION; }
+<typeDefinition>[;][ \r\t\n]*"@defmacro"[ \r\t]+		BEGIN(macro);
+<typeDefinition>[;][ \r\t\n]*"begin"					{ BEGIN(INITIAL); return KW_BEGIN; }
 
 program					return KW_PROGRAM;
 begin 					return KW_BEGIN;
@@ -86,7 +108,6 @@ until					return KW_UNTIL;
 downto					return KW_DOWNTO;
 true					return KW_TRUE;
 false					return KW_FALSE;
-type					return KW_TYPE;
 
 
 {STRING}				{ yylval.crepr = strdup(yytext); return STRING; }

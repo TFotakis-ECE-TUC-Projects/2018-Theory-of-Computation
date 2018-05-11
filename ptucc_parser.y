@@ -47,7 +47,6 @@ extern int line_num;
 %token KW_DOWNTO
 %token KW_TRUE
 %token KW_FALSE
-%token KW_TYPE
 %token OP_DIFFERENT
 %token OP_LESS_EQUAL
 %token OP_GREATER_EQUAL
@@ -96,10 +95,6 @@ extern int line_num;
 %type <crepr> subprogramParametersDeclaration
 %type <crepr> subprogramParametersDeclarationList
 %type <crepr> variableDeclarationOptional
-%type <crepr> typedefsOptional
-%type <crepr> typedefs
-%type <crepr> typedefList
-%type <crepr> typedefStatement
 %type <crepr> command
 %type <crepr> ifStatement
 %type <crepr> forStatement
@@ -122,7 +117,7 @@ empty:
 	{ $$ = ""; };
 
 program:
-	program_decl typedefsOptional variableDeclarationOptional subprogramList body  '.'
+	program_decl variableDeclarationOptional subprogramList body  '.'
 	{ 
 		/* We have a successful parse! 
 			Check for any errors and generate output. 
@@ -132,8 +127,7 @@ program:
 			puts(c_prologue);
 			printf("%s", $2);
 			printf("%s", $3);
-			printf("%s", $4);
-			printf("int main() %s", $5);
+			printf("int main() %s", $4);
 		}
 	}
 	;
@@ -320,10 +314,10 @@ subprogramList:
 	;
 
 subprogram:	
-	KW_PROCEDURE IDENT '(' subprogramParametersDeclarationList ')' ';' typedefsOptional variableDeclarationOptional subprogramList subprogramBody	
-		{ $$ = template("void %s(%s){\n%s%s%s%s}\n", $2, $4, $7, $8, $9, $10); }
-	| KW_FUNCTION IDENT '(' subprogramParametersDeclarationList ')' ':' dataType ';' typedefsOptional variableDeclarationOptional subprogramList subprogramBody	
-		{ $$ = template("%s %s(%s){\n%s\t%s result;\n%s%s%s}\n", $7, $2, $4, $9, $7, $10, $11, $12); }
+	KW_PROCEDURE IDENT '(' subprogramParametersDeclarationList ')' ';' variableDeclarationOptional subprogramList subprogramBody	
+		{ $$ = template("void %s(%s){\n%s%s%s}\n", $2, $4, $7, $8, $9); }
+	| KW_FUNCTION IDENT '(' subprogramParametersDeclarationList ')' ':' dataType ';' variableDeclarationOptional subprogramList subprogramBody	
+		{ $$ = template("%s %s(%s){\n\t%s result;\n%s%s%s}\n", $7, $2, $4, $7, $9, $10, $11); }
 	;
 
 subprogramBody:	
@@ -347,21 +341,6 @@ subprogramParametersDeclaration:
 	| identifierList ':' KW_FUNCTION '(' parametersDeclaration ')' ':' dataType
 		{ $$ = getFunctionPointerDeclarationAsParameters($1, $8, $5); }
 	;
-
-
-typedefsOptional: 
-	empty | typedefs;
-
-typedefs: 
-	KW_TYPE typedefList { $$ = template("%s", $2); };
-
-typedefList:
-	typedefStatement
-	| typedefList typedefStatement	{ $$ = template("%s%s", $1, $2); }
-	;
-
-typedefStatement: 
-	IDENT '=' dataType ';'	{ $$ = template("typedef %s %s;\n", $3, $1); };
 
 command:
 	IDENT OP_ASSIGN expression 
