@@ -96,6 +96,71 @@ calculate: ptucc_scan ptucc
 	gcc -Wall -std=c99 -o programs/build/calculate programs/build/calculate.c
 	./programs/build/calculate
 
+sample000: ptucc_scan ptucc
+	./ptucc < programs/sample000.fl > programs/build/sample000.c
+	gcc -Wall -std=c99 -o programs/build/sample000 programs/build/sample000.c
+	./programs/build/sample000
+
+sample001: ptucc_scan ptucc
+	./ptucc < programs/sample001.fl > programs/build/sample001.c
+	gcc -Wall -std=c99 -o programs/build/sample001 programs/build/sample001.c
+	./programs/build/sample001
+
+sample002: ptucc_scan ptucc
+	./ptucc < programs/sample002.fl > programs/build/sample002.c
+	gcc -Wall -std=c99 -o programs/build/sample002 programs/build/sample002.c
+	./programs/build/sample002
+
+sample003: ptucc_scan ptucc
+	./ptucc < programs/sample003.fl > programs/build/sample003.c
+	gcc -Wall -std=c99 -o programs/build/sample003 programs/build/sample003.c
+	./programs/build/sample003
+
+sample004: ptucc_scan ptucc
+	./ptucc < programs/sample004.fl > programs/build/sample004.c
+	gcc -Wall -std=c99 -o programs/build/sample004 programs/build/sample004.c
+	./programs/build/sample004
+
+sample005: ptucc_scan ptucc
+	./ptucc < programs/sample005.fl > programs/build/sample005.c
+	gcc -Wall -std=c99 -o programs/build/sample005 programs/build/sample005.c
+	./programs/build/sample005
+
+sample006: ptucc_scan ptucc
+	./ptucc < programs/sample004.fl > programs/build/sample006.c
+	gcc -Wall -std=c99 -o programs/build/sample006 programs/build/sample006.c
+	./programs/build/sample006
+
+bad001: ptucc_scan ptucc
+	./ptucc < programs/bad001.fl > programs/build/bad001.c
+	gcc -Wall -std=c99 -o programs/build/bad001 programs/build/bad001.c
+	./programs/build/bad001
+
+bad002: ptucc_scan ptucc
+	./ptucc < programs/bad002.fl > programs/build/bad002.c
+	gcc -Wall -std=c99 -o programs/build/bad002 programs/build/bad002.c
+	./programs/build/bad002
+
+bad003: ptucc_scan ptucc
+	./ptucc < programs/bad003.fl > programs/build/bad003.c
+	gcc -Wall -std=c99 -o programs/build/bad003 programs/build/bad003.c
+	./programs/build/bad003
+
+bad004: ptucc_scan ptucc
+	./ptucc < programs/bad004.fl > programs/build/bad004.c
+	gcc -Wall -std=c99 -o programs/build/bad004 programs/build/bad004.c
+	./programs/build/bad004
+
+bad005: ptucc_scan ptucc
+	./ptucc < programs/bad005.fl > programs/build/bad005.c
+	gcc -Wall -std=c99 -o programs/build/bad005 programs/build/bad005.c
+	./programs/build/bad005
+
+big: ptucc_scan ptucc
+	./ptucc < programs/big.fl > programs/build/big.c
+	gcc -Wall -std=c99 -o programs/build/big programs/build/big.c
+	./programs/build/big
+
 #-----------------------------------------------------
 # Build control
 #-----------------------------------------------------

@@ -173,7 +173,8 @@ primaryExpression:
 	| REAL
 	| STRING 									{ $$ = string_ptuc2c($1); }
 	| IDENT
-	| IDENT '[' expression ']'					{ $$ = template("%s[%s]", $1, $3); }
+	| IDENT arrayIndexer 						{ $$ = template("%s%s", $1, $2); }	
+	| KW_RESULT									{ $$ = "result"; }
 	| KW_TRUE									{ $$ = "1"; }
 	| KW_FALSE									{ $$ = "0"; }
 	| proc_call
@@ -285,15 +286,13 @@ basicDataType:
 	;
 
 arrayDimensionDeclarator:
-	'[' POSINT ']'					{ $$ = template("[%s]", $2); }
-	| arrayIndexer '[' POSINT ']'	{ $$ = template("%s[%s]", $1, $3); }
+	'[' POSINT ']'								{ $$ = template("[%s]", $2); }
+	| arrayDimensionDeclarator '[' POSINT ']'	{ $$ = template("%s[%s]", $1, $3); }
 	;
 
 arrayIndexer:
-	 '[' IDENT ']'					{ $$ = template("[%s]", $2); }
-	| arrayIndexer '[' IDENT ']'	{ $$ = template("%s[%s]", $1, $3); }
-	| '[' POSINT ']'				{ $$ = template("[%s]", $2); }
-	| arrayIndexer '[' POSINT ']'	{ $$ = template("%s[%s]", $1, $3); }
+	'[' expression ']'					{ $$ = template("[%s]", $2); }
+	| arrayIndexer '[' expression ']'	{ $$ = template("%s[%s]", $1, $3); }
 	;
 
 functionPointerDeclaration:
@@ -345,17 +344,20 @@ subprogramParametersDeclaration:
 command:
 	IDENT OP_ASSIGN expression 
 		{ $$ = template("\t%s = %s;\n", $1, $3); }
+	| IDENT arrayIndexer OP_ASSIGN expression
+		{ $$ = template("\t%s%s = %s;\n", $1, $2, $4); }
 	| KW_RESULT OP_ASSIGN expression 
 		{ $$ = template("\tresult = %s;\n", $3); }
 	| KW_RETURN 
 		{ $$ = template("\treturn result;\n"); }
-	| IDENT ':' command 
+	| IDENT ':' statement 
 		{ $$ = template("\t%s: %s;\n", $1, $3); }
 	| KW_GOTO IDENT 
 		{ $$ = template("\tgoto %s;\n", $2); }
 	| ifStatement
 	| forStatement
 	| whileStatement
+
 	;
 
 ifStatement:
@@ -367,9 +369,9 @@ ifStatement:
 
 forStatement:
 	KW_FOR IDENT OP_ASSIGN expression KW_TO expression KW_DO flowControlBody 
-		{ $$ = template("\tfor(int %s=$s; i<=%s; i++){\n%s\t}\n", $2, $4, $6, $8); }
+		{ $$ = template("\tfor(int %s=%s; %s<=%s; %s++){\n%s\t}\n", $2, $4, $2, $6, $2, $8); }
 	| KW_FOR IDENT OP_ASSIGN expression KW_DOWNTO expression KW_DO flowControlBody 
-		{ $$ = template("\tfor(int %s=$s; i>=%s; i--){\n%s\t}\n", $2, $4, $6, $8); }
+		{ $$ = template("\tfor(int %s=%s; %s>=%s; %s--){\n%s\t}\n", $2, $4, $2, $6, $2, $8); }
 	;
 
 whileStatement:

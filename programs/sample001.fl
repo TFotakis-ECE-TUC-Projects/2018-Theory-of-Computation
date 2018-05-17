@@ -1,9 +1,11 @@
-program useless;
-type tzanis = integer;
-kri8 = array of char;
-@defmacro my2pi (2*3.14159265)
-var x : tzanis;
-y : kri8;
+(* 
+	Sample program 
+*)
+
+program foo;
+
 begin
-	x := my2pi
+	writeString('Hello world');
+	writeString('\n')
 end.
+
