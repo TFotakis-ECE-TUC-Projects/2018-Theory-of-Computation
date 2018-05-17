@@ -20,7 +20,6 @@ program big;
 
     (* This is a rather silly function *)
     procedure compute(n: integer; k:integer);
-        var j: integer;
 
         function cube(i: integer): integer;
         begin
@@ -28,32 +27,40 @@ program big;
             return
         end;
 		
-		procedure init();
+		procedure computeWithForLoops();
+		var sum: integer;
 		begin
+			sum := 0;
 			for l := 0 to L do
 			begin
 				for m := M downto 0 do
 				begin
-					while n < N do
-					begin
-						i := 1;
-						j := 1;
-						repeat
-						begin
-							i := i + i*j;
-							j := cube(j)
-						end
-						until i > l+m+n;
-						firstArray[l][m][n] := i;
-						secondArray[l][m][n] := j;
-						n := n+1
-					end
-				end
-			end
+					sum := sum + cube(M) / cube(M)
+				end;
+				if l mod N = 0 then 
+					writeString(".")
+			end;
+			nl();
+			mystring := 'Sum = ';
+			writeString(mystring);
+			writeInteger(sum);
+			nl();
+			if sum mod 2 = 0 then
+				writeString("Sum is Even")
+			else
+				writeString("Sum is Odd");
+			nl();
+			if sum * 2 mod 3 = 0 then
+				writeString('Sum*2 is divisible with "3"')
+			else if sum *2 mod 3 = 1 then
+				writeString('Sum*2 has a remainder of "1" when divided with "3"')
+			else
+				writeString('Sum*2 has a remainder of "2" when divided with "3"');
+			nl()
 		end;
 
     begin
-		init()
+		computeWithForLoops()
 		
     end;
 
@@ -76,6 +83,8 @@ begin
     i := promptForInteger('Type another number: ');
     compute(k,i); (* Here you can see some dummy comments! *)
 	goto myLabel;
-	writeString("This shoould not be shown");
-	myLabel: writeString("Goto Works Fine!")
+	mystring := "This should not be shown";
+	writeString(mystring);
+	myLabel: mystring := "Goto Works Fine!";
+	writeString(mystring)
 end.

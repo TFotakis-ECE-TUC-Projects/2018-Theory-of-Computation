@@ -156,10 +156,25 @@ bad005: ptucc_scan ptucc
 	gcc -Wall -std=c99 -o programs/build/bad005 programs/build/bad005.c
 	./programs/build/bad005
 
-big: ptucc_scan ptucc
-	./ptucc < programs/big.fl > programs/build/big.c
-	gcc -Wall -std=c99 -o programs/build/big programs/build/big.c
-	./programs/build/big
+correct1: ptucc_scan ptucc
+	./ptucc < programs/correct1.fl > programs/build/correct1.c
+	gcc -Wall -std=c99 -o programs/build/correct1 programs/build/correct1.c
+	./programs/build/correct1
+
+correct2: ptucc_scan ptucc
+	./ptucc < programs/correct2.fl > programs/build/correct2.c
+	gcc -Wall -std=c99 -o programs/build/correct2 programs/build/correct2.c
+	./programs/build/correct2
+
+wrong1: ptucc_scan ptucc
+	./ptucc < programs/wrong1.fl > programs/build/wrong1.c
+	gcc -Wall -std=c99 -o programs/build/wrong1 programs/build/wrong1.c
+	./programs/build/wrong1
+
+wrong2: ptucc_scan ptucc
+	./ptucc < programs/wrong2.fl > programs/build/wrong2.c
+	gcc -Wall -std=c99 -o programs/build/wrong2 programs/build/wrong2.c
+	./programs/build/wrong2
 
 #-----------------------------------------------------
 # Build control

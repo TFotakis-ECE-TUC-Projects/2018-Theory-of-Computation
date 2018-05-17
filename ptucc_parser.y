@@ -351,7 +351,7 @@ command:
 	| KW_RETURN 
 		{ $$ = template("\treturn result;\n"); }
 	| IDENT ':' statement 
-		{ $$ = template("\t%s: %s;\n", $1, $3); }
+		{ $$ = template("\t%s: %s", $1, $3); }
 	| KW_GOTO IDENT 
 		{ $$ = template("\tgoto %s;\n", $2); }
 	| ifStatement
@@ -369,9 +369,9 @@ ifStatement:
 
 forStatement:
 	KW_FOR IDENT OP_ASSIGN expression KW_TO expression KW_DO flowControlBody 
-		{ $$ = template("\tfor(int %s=%s; %s<=%s; %s++){\n%s\t}\n", $2, $4, $2, $6, $2, $8); }
+		{ $$ = template("\tfor(%s=%s; %s<=%s; %s++){\n%s\t}\n", $2, $4, $2, $6, $2, $8); }
 	| KW_FOR IDENT OP_ASSIGN expression KW_DOWNTO expression KW_DO flowControlBody 
-		{ $$ = template("\tfor(int %s=%s; %s>=%s; %s--){\n%s\t}\n", $2, $4, $2, $6, $2, $8); }
+		{ $$ = template("\tfor(%s=%s; %s>=%s; %s--){\n%s\t}\n", $2, $4, $2, $6, $2, $8); }
 	;
 
 whileStatement:

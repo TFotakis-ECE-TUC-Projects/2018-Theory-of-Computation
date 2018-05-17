@@ -1,6 +1,7 @@
 #include <assert.h>
 #include <string.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <stdarg.h>
 #include "cgen.h"
 
@@ -38,20 +39,22 @@ char* template(const char* pat, ...){
 char* string_ptuc2c(char* P){
 	int Plen = strlen(P);
 	assert(Plen>=2);
-	P[0] = '"';
-	P[Plen-1] = '"';
-	char *result = "\"";
-	char *token1 = strtok(P, "\"");
-	char *token2 = strtok(NULL, "\"");
-	while(token1 != NULL){
-		if(token2 == NULL)
-			result = template("%s%s", result, token1);
-		else
-			result = template("%s%s\\\"", result, token1);
-		token1 = token2;
-		token2 = strtok(NULL, "\"");
+	char *result = (char*) malloc(sizeof(char)*2*Plen);
+	int j=0;
+	result[0]='\"';
+	for(int i=1; i<Plen-1; i++){
+		if(P[i]=='\"'){
+			j++;
+			result[j]='\\';
+			j++;
+			result[j]='\"';
+		}else{
+			j++;
+			result[j]=P[i];
+		}
 	}
-	result = template("%s\"", result);
+	j++;
+	result[j]='\"';
 	return result;
 }
 
